@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -28,37 +27,6 @@ var (
 	VerificationContent string
 )
 
-// Главная страница
-func indexHandler(w http.ResponseWriter, _ *http.Request) {
-	data := SiteData{
-		StudSitePath:        StudSitePath,
-		Title:               "l9_stud",
-		MetaTitle:           "Учебная экосистема - l9labs",
-		VerificationName:    VerificationName,
-		VerificationContent: VerificationContent,
-	}
-
-	tmpl, _ := template.ParseFiles("templates/index.html")
-	if err := tmpl.Execute(w, data); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Страница бота
-func botHandler(w http.ResponseWriter, _ *http.Request) {
-	data := SiteData{
-		StudSitePath: StudSitePath,
-		Title:        "l9_stud_bot",
-		MetaTitle:    "Бот с раписанием занятий - l9labs",
-		Description:  "Расписание занятий и уведомления о парах прямо в твоём мессенджере!",
-	}
-
-	tmpl, _ := template.ParseFiles("templates/bot.html")
-	if err := tmpl.Execute(w, data); err != nil {
-		log.Fatal(err)
-	}
-}
-
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found!")
@@ -75,8 +43,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", indexHandler)
-	router.HandleFunc("/bot", botHandler)
+	router.HandleFunc("/", IndexHandler)
+	router.HandleFunc("/site", IndexHandler)
+	router.HandleFunc("/bot", BotHandler)
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "media/favicon.ico")
 	})
@@ -85,7 +54,7 @@ func main() {
 		Addr:         "localhost:5000",
 		Handler:      router,
 		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 1 * time.Second, //10ms Redundant time
+		WriteTimeout: 1 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
 
